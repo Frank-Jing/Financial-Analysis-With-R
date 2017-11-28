@@ -1,7 +1,5 @@
 ### Chapter 1 ###
 
-setwd("/Users/Weixiang/Documents/Git Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch1")
-
 #-------------------------------------------------------------------------------------
 # Get Stock's history data and plot using chartSeries()
 
