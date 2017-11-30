@@ -10,11 +10,12 @@ sp5=da$sp
 cor(sp5,ibm)
 cor(sp5,ibm,method='spearman')
 cor(sp5,ibm,method='kendall')
+
 # sample ACF
 da=read.table("m-dec12910.txt",header=T)
 head(da)
 d10=da$dec10  # select the Decile 10 returns
-dec10=ts(d10,frequency=12,start=c(1967,1))
+dec10=ts(d10,frequency=12,start=c(1967,1)) 
 par(mfcol=c(2,1))
 plot(dec10,xlab='year',ylab='returns')
 title(main='(a): Simple returns')
@@ -24,6 +25,7 @@ f1=acf(d10,lag=24)
 f1$acf
 tt=f1$acf[13]*sqrt(516)
 tt
+
 # Ljung-Box Q statistics
 da=read.table("m-ibmsp6709.txt",header=T)
 ibm=da$ibm

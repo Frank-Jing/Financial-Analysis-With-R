@@ -5,12 +5,19 @@
 ### 3. List each chapter's subjects
 
 # ch1 setwd
-setwd("/Users/Weixiang/Documents/
-      Git Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch1")
+# win
+setwd("D:/Git_Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch1")
+# mac
+setwd("/Users/Weixiang/Documents/Git Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch1")
 library(quantmod)
 library(mnormt)
 library(fBasics)
 
 # ch2 setwd
-setwd("/Users/Weixiang/Documents/
-      Git Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch2")
+# win
+setwd("D:/Git_Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch2")
+# mac
+setwd("/Users/Weixiang/Documents/Git Projects/Financial-Analysis-With-R/Intro to Analysis of Financial Data/Ch2")
+
+
+

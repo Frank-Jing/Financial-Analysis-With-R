@@ -1,19 +1,85 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: 'Chapter 2: Linear Models for Financial Time Series'
+output:
+  html_document:
+    df_print: paged
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book financial analysis (2010).
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+In this chapter, Ruey introduced following models:
 
-```{r}
-plot(cars)
+- Simple autoregressive model (AR)
+- Simple moving average model (MA)
+- Mixed autoregressive moving average model (ARMA)
+- Unit-root models and unit-root test
+- Exponential Smoothing
+- Seasonal Models
+- Regression models with time series errors
+- Fractionally differenced models for long-range dependence
+
+# Stationary
+
+## Weak stationary
+
+"Weak Stationary" is fundamental concept in financial time series analysis. Literally, it states that the log return of a certain stock or asset is around 0 over time, i.e. if the time span is divided into subperiods and the resulting sample mean of subperiods is close to 0.
+
+The most significant property of a week stationary statistics variable is time-invariance.
+
+```{r, warning=FALSE, message=FALSE}
+library(quantmod)
+SPX <- getSymbols("^GSPC",from = "2007-01-01")
+SP.rtn <- diff(log(GSPC$GSPC.Close)) # Compute log returns
+chartSeries(SP.rtn,theme="white")
+```
+We could see that except depression era, the log return of S&P 500 is around $[-0.05, 0.05]$. The variance of log return is constant over time.
+
+```{r, warning=FALSE, message=FALSE}
+ko <- read.csv("KO_1985-2010.csv")
+ko.dvid <- na.omit(ko[, c(2,3)])
+ko.dvid[, 1] <- ymd(ko.dvid[, 1])
+ko.dvid <- xts(ko.dvid[,2], order.by = ko.dvid[,1])
+chartSeries(ko.dvid)
+```
+This is the dividend payment of Coca Cola from 1985 to 2016, the date and payment is given by [WRDS](https://wrds-web.wharton.upenn.edu/wrds/index.cfm). If dividing the time span, we could see that the payment is not time invariant. The difference of each subperiod is significant.
+
+Now we conclude some important properties of time series $x_t$:
+1. The first 2 moment of $x_t$, i.e mean $\mu = \mathbb{E}(x_t)$ and variance $\gamma_0 = \mathbb{E}[(x_t - \mu)^2]$. Here $\mu, \gamma_0$ are not functions of $t$.
+
+2. For given $k$, the lag-$k$ autocovariance of $x_t$ as $\gamma_k = Cov(x_t, x_{t-k})$.
+  2.1 By Cauchy-Schwarz inequality, $\gamma_k$ exists and is time invariant, and this statistics variable show linear dependence between $x_t$ and $x_{t-k}$.
+  2.2 $\gamma_k = \gamma_{-k}$, $\gamma_0 = Var(x_t)$.
+
+# Correlation and autocorrelation function
+
+\[ \rho_{x,y} = \frac{Cov(x,y)}{\sqrt{Var(x)\cdot Var(y)}}  \]
+
+And the estimation of $\rho_{x,y}$ is trivial.
+
+## Alternatives of traditional Pearson correlation
+
+The most popular 2 alternatives:
+1. Spearman's rho -- Spearman's rank correlation, as is based on ranks of marginal variables.
+2. Kendall's tau -- difference between concordance and discordance.
+\[ \tau = P[(X_1 - X_2)(Y_1 - Y_2) > 0] - P[(X_1 - X_2)(Y_1 - Y_2) < 0]\]
+where $(X_1, Y_1), (X_2, Y_2)$ are iid continuous bivariate random variables.
+
+```{r, eval = FALSE}
+cor(sp5,ibm,method='spearman')
+cor(sp5,ibm,method='kendall')
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+## Autocorrelation Function (ACF)
+Assump $x_t$ is weakly stationary, lag-$k$ autocorrelation $\rho_k$ of $x_t$ is 
+\[ \rho_k = \frac{Cov(x_t, x_{t-k})}{\sqrt{Var(x_t) Var(x_{t-k})}} = \frac{Cov(x_t, x_{t-k})}{Var(x_t)} = \frac{\gamma_k}{\gamma_0} \]
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+Similar to $\gamma_k$, $\rho_0 = 1, \rho_k = \rho_{-k}$ and $-1 \leq \rho_k \leq 1$. Here $\{\rho_k\}_{k=0,1\dots}$ is ACF of $x_t$.
+
+If $\rho_k = 0$ for $\forall k>0$, $x_t$ is not serially correlated.
+
+
+
+
+
 

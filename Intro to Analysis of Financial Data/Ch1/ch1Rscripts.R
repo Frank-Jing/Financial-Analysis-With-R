@@ -144,6 +144,7 @@ m1 <- apply(rt,2,mean) # Obtain sample means
 v1 <- cov(rt) # Obtain sample covariance matrix
 m1
 v1
+
 library(mnormt) # Load package
 x <- rmnorm(1029,mean=m1,varcov=v1) # Simulation
 dim(x)
