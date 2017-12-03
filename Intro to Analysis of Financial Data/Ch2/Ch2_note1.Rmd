@@ -1,5 +1,5 @@
 ---
-title: 'Chapter 2: Linear Models for Financial Time Series'
+title: 'Chapter 2: Linear Models for Financial Time Series (1)'
 output: 
   html_document:
    toc: true
