@@ -1,8 +1,6 @@
 ---
 title: 'Chapter 2: Linear Models for Financial Time Series'
-output:
-  html_document:
-    df_print: paged
+output: html_notebook
 ---
 
 This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book financial analysis (2010).
@@ -26,29 +24,37 @@ In this chapter, Ruey introduced following models:
 
 The most significant property of a week stationary statistics variable is time-invariance.
 
-```{r, warning=FALSE, message=FALSE}
+```{r, message= FALSE, warning=FALSE}
 library(quantmod)
-SPX <- getSymbols("^GSPC",from = "2007-01-01")
-SP.rtn <- diff(log(GSPC$GSPC.Close)) # Compute log returns
+spx <- getSymbols("^GSPC",from = "2006-01-01")
+spx.rtn <- diff(log(GSPC$GSPC.Adjusted)) # Compute log returns
 chartSeries(SP.rtn,theme="white")
 ```
+
 We could see that except depression era, the log return of S&P 500 is around $[-0.05, 0.05]$. The variance of log return is constant over time.
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning = FALSE, message = FALSE}
+library(xts)
+library(lubridate)
+library(quantmod)
 ko <- read.csv("KO_1985-2010.csv")
-ko.dvid <- na.omit(ko[, c(2,3)])
+ko.dvid <- na.omit(ko[, c(3,4)])
 ko.dvid[, 1] <- ymd(ko.dvid[, 1])
 ko.dvid <- xts(ko.dvid[,2], order.by = ko.dvid[,1])
-chartSeries(ko.dvid)
+chartSeries(ko.dvid, theme = "white")
 ```
+
 This is the dividend payment of Coca Cola from 1985 to 2016, the date and payment is given by [WRDS](https://wrds-web.wharton.upenn.edu/wrds/index.cfm). If dividing the time span, we could see that the payment is not time invariant. The difference of each subperiod is significant.
 
 Now we conclude some important properties of time series $x_t$:
+
 1. The first 2 moment of $x_t$, i.e mean $\mu = \mathbb{E}(x_t)$ and variance $\gamma_0 = \mathbb{E}[(x_t - \mu)^2]$. Here $\mu, \gamma_0$ are not functions of $t$.
 
 2. For given $k$, the lag-$k$ autocovariance of $x_t$ as $\gamma_k = Cov(x_t, x_{t-k})$.
-  2.1 By Cauchy-Schwarz inequality, $\gamma_k$ exists and is time invariant, and this statistics variable show linear dependence between $x_t$ and $x_{t-k}$.
-  2.2 $\gamma_k = \gamma_{-k}$, $\gamma_0 = Var(x_t)$.
+
+    2.1. By Cauchy-Schwarz inequality, $\gamma_k$ exists and is time invariant, and this statistics variable show linear dependence between $x_t$ and $x_{t-k}$.
+  
+    2.2. $\gamma_k = \gamma_{-k}$, $\gamma_0 = Var(x_t)$.
 
 # Correlation and autocorrelation function
 
@@ -71,12 +77,111 @@ cor(sp5,ibm,method='kendall')
 
 
 ## Autocorrelation Function (ACF)
+
 Assump $x_t$ is weakly stationary, lag-$k$ autocorrelation $\rho_k$ of $x_t$ is 
 \[ \rho_k = \frac{Cov(x_t, x_{t-k})}{\sqrt{Var(x_t) Var(x_{t-k})}} = \frac{Cov(x_t, x_{t-k})}{Var(x_t)} = \frac{\gamma_k}{\gamma_0} \]
 
 Similar to $\gamma_k$, $\rho_0 = 1, \rho_k = \rho_{-k}$ and $-1 \leq \rho_k \leq 1$. Here $\{\rho_k\}_{k=0,1\dots}$ is ACF of $x_t$.
 
 If $\rho_k = 0$ for $\forall k>0$, $x_t$ is not serially correlated.
+
+For given $\{x_t\}_{t=1,\dots,T}$, then
+\begin{align*}
+  \bar{x} &= \frac{1}{T}\sum^{T}_{1} x_t\\
+  \hat{\rho_0} &= \frac{\sum_{t=2}^{T}(x_t-\bar{x})(x_{t-1}-\bar{x})}{\sum_{t=1}^{T}(x_t - \bar{x})^2}\\
+  \hat{\rho_k} &= \frac{\sum_{t=k+1}^{T}(x_t-\bar{x})(x_{t-k}-\bar{x})}{\sum_{t=1}^{T}(x_t - \bar{x})^2} \quad 0\leq k<T-1
+\end{align*}
+
+If $\{x_t\}$ iid with $\mathbb{E}[x_t^2]<\infty$. Then
+\[ \hat{\rho_k} \longrightarrow \mathbf{N}[0, \frac{1}{T} ] \quad \text{asymptotically}\]
+
+For more weaker case, $x_t$ weakly stationary and has the form (linear time series)
+\[ x_t = \mu + \sum_{i=0}^{q} \psi_i a_{t-i}\]
+$\psi_0 =1$, $\{a_i\}$ iid and with mean 0, then
+\[ \hat{\rho_k} \longrightarrow \mathbf{N}[0, \frac{1+2\sum_{i=1}^{k-1}\rho_i^2}{T} ] \quad \text{asymptotically}\]
+
+```{r, warning = FALSE, message = FALSE}
+da = read.table("m-dec12910.txt",header=T)
+head(da)
+d10 = da$dec10  # select the Decile 10 returns
+dec10 = ts(d10, frequency = 12, start = c(1967,1)) 
+par(mfcol = c(2, 1))
+plot(dec10, xlab='year', ylab = 'returns')
+title(main = '(a): Simple returns')
+acf(d10, lag = 24) # command to obtain sample ACF of the data
+```
+
+Here on acf plot, the 2 dashed line is the boundary of 2 standard error $\pm 2/\sqrt{T}$, i.e 95% CI for individual acf.
+
+## Test ACF
+
+### Test individual ACF
+
+For given $k$, we have hypos to test:
+
+1. $H_0 : \rho_k = 0$,
+2. $H_1 : \rho_k \neq 0$
+
+And the test statistics is
+\[ 
+  t-ratio = \frac{\hat{\rho_k}}{\sqrt{(1+2\sum_{i=1}^{k-1}\hat{\rho}_i^2)/T}} =  \frac{\hat{\rho_k} \sqrt{T}}{\sqrt{1+2\sum_{i=1}^{k-1}\hat{\rho}_i^2}}\]
+  
+For most packages in `R`, they use
+\[
+  t-ratio = \frac{\hat{\rho_k}}{\sqrt{1/T}} = \hat{\rho_k}\sqrt{T}
+\]
+
+If $\{x_t\}$ a stationary Gussian Series ($\exists N, x_n = 0, \forall n>N$), with $\rho_j =0$ for $j>k$, then
+\[ t-ratio \longrightarrow \mathbf{N}[0,1] \quad \text{as} \ {} T \rightarrow \infty \]
+
+This means when testing hypo, just compare $|t-ratio|$ with $\mathbb{Z}_{\alpha/2} = 1.96$.
+
+```{r, warning = FALSE, message = FALSE}
+f1=acf(d10,lag=24)
+f1$acf
+tt=f1$acf[13]*sqrt(516)
+tt
+```
+
+### Portmanteau Test
+
+This is the fun part, like what we did in multivariate regression and test all or part of coefficients in model simutaneously.
+
+In fact, a linear (pay attention to our linearity assumption) time series model can be characterized by its ACF. And by making use of sample ACF, we could specify the dependence of the data.
+
+Now we give the hypos of jointly test:
+
+1. $ H_0: \rho_0 = \rho_1 = \dots = \rho_m = 0$,
+2. $ H_1: \rho_i \neq 0 $ for some certain $i$s.
+
+The test statistic is constructed by Box and Pierce (1970):
+\[ Q_{*}(m) = T \sum_{l = 1}^{m} \hat{\rho}_l^2 \]
+
+If $\{ x_t \}$ is iid, 
+\[ Q_{*}(m) \longrightarrow \chi^2(m) \quad \text{asymptotically} \]
+
+We have the modified $Q_{*}(m)$ statistic to increase the power of test for finite sample:
+
+\[ Q(m) = T(T+2) \sum_{l=1}^{m} \frac{\hat{\rho}^2_l}{T-l}  \]
+
+Comparing with $\chi^2_{\alpha}$, we could decide to reject $H_0$.
+
+```{r, message= FALSE, warning= FALSE}
+# Ljung-Box Q statistics
+da=read.table("m-ibmsp6709.txt",header=T)
+ibm=da$ibm
+lnibm=log(ibm+1) # Transfer to log returns
+Box.test(ibm,lag=12,type='Ljung')
+Box.test(lnibm,lag=12,type='Ljung')
+```
+
+Simulation study suggests that $m \approx ln(T)$ provides better power performance.
+
+In `CAPM`, we want that $\{x_t\}$ is not predictable and have no autocorrelations. By $Q$, we have the tool to test efficiency of market.
+
+## White noise
+
+
 
 
 

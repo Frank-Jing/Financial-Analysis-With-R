@@ -192,10 +192,10 @@ $(document).ready(function () {
 <p>The most significant property of a week stationary statistics variable is time-invariance.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShxdWFudG1vZClcblNQWCA8LSBnZXRTeW1ib2xzKFwiXkdTUENcIixmcm9tID0gXCIyMDA3LTAxLTAxXCIsIHNyYyA9XCJ5YWhvb1wiKVxuU1AucnRuIDwtIGRpZmYobG9nKEdTUEMkR1NQQy5DbG9zZSkpICMgQ29tcHV0ZSBsb2cgcmV0dXJuc1xuY2hhcnRTZXJpZXMoU1AucnRuLHRoZW1lPVwid2hpdGVcIilcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShxdWFudG1vZClcbnNweCA8LSBnZXRTeW1ib2xzKFwiXkdTUENcIixmcm9tID0gXCIyMDA2LTAxLTAxXCIpXG5zcHgucnRuIDwtIGRpZmYobG9nKEdTUEMkR1NQQy5BZGp1c3RlZCkpICMgQ29tcHV0ZSBsb2cgcmV0dXJuc1xuY2hhcnRTZXJpZXMoU1AucnRuLHRoZW1lPVwid2hpdGVcIilcbmBgYCJ9 -->
 <pre class="r"><code>library(quantmod)
-SPX &lt;- getSymbols(&quot;^GSPC&quot;,from = &quot;2007-01-01&quot;, src =&quot;yahoo&quot;)
-SP.rtn &lt;- diff(log(GSPC$GSPC.Close)) # Compute log returns
+spx &lt;- getSymbols(&quot;^GSPC&quot;,from = &quot;2006-01-01&quot;)
+spx.rtn &lt;- diff(log(GSPC$GSPC.Adjusted)) # Compute log returns
 chartSeries(SP.rtn,theme=&quot;white&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
@@ -203,22 +203,137 @@ chartSeries(SP.rtn,theme=&quot;white&quot;)</code></pre>
 <p>We could see that except depression era, the log return of S&amp;P 500 is around <span class="math inline">\([-0.05, 0.05]\)</span>. The variance of log return is constant over time.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxua28gPC0gcmVhZC5jc3YoXCJLT18xOTg1LTIwMTAuY3N2XCIpXG5rby5kdmlkIDwtIG5hLm9taXQoa29bLCBjKDIsMyldKVxua28uZHZpZFssIDFdIDwtIHltZChrby5kdmlkWywgMV0pXG5rby5kdmlkIDwtIHh0cyhrby5kdmlkWywyXSwgb3JkZXIuYnkgPSBrby5kdmlkWywxXSlcbmNoYXJ0U2VyaWVzKGtvLmR2aWQpXG5gYGAifQ== -->
-<pre class="r"><code>ko &lt;- read.csv(&quot;KO_1985-2010.csv&quot;)
-ko.dvid &lt;- na.omit(ko[, c(2,3)])
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh4dHMpXG5saWJyYXJ5KGx1YnJpZGF0ZSlcbmxpYnJhcnkocXVhbnRtb2QpXG5rbyA8LSByZWFkLmNzdihcIktPXzE5ODUtMjAxMC5jc3ZcIilcbmtvLmR2aWQgPC0gbmEub21pdChrb1ssIGMoMyw0KV0pXG5rby5kdmlkWywgMV0gPC0geW1kKGtvLmR2aWRbLCAxXSlcbmtvLmR2aWQgPC0geHRzKGtvLmR2aWRbLDJdLCBvcmRlci5ieSA9IGtvLmR2aWRbLDFdKVxuY2hhcnRTZXJpZXMoa28uZHZpZCwgdGhlbWUgPSBcIndoaXRlXCIpXG5gYGAifQ== -->
+<pre class="r"><code>library(xts)
+library(lubridate)
+library(quantmod)
+ko &lt;- read.csv(&quot;KO_1985-2010.csv&quot;)
+ko.dvid &lt;- na.omit(ko[, c(3,4)])
 ko.dvid[, 1] &lt;- ymd(ko.dvid[, 1])
 ko.dvid &lt;- xts(ko.dvid[,2], order.by = ko.dvid[,1])
-chartSeries(ko.dvid)</code></pre>
+chartSeries(ko.dvid, theme = &quot;white&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>This is the dividend payment of Coca Cola from 1985 to 2016, the date and payment is given by <a href="https://wrds-web.wharton.upenn.edu/wrds/index.cfm">WRDS</a>. If dividing the time span, we could see that the payment is not time invariant. The difference of each subperiod is significant.</p>
-<p>Now we conclude some important properties of time series <span class="math inline">\(x_t\)</span>: 1. The first 2 moment of <span class="math inline">\(x_t\)</span>, i.e mean <span class="math inline">\(\mu = \mathbb{E}(x_t)\)</span> and variance <span class="math inline">\(\mathbb{E}[(x_t - \mu)^2]\)</span></p>
+<p>Now we conclude some important properties of time series <span class="math inline">\(x_t\)</span>:</p>
+<ol style="list-style-type: decimal">
+<li><p>The first 2 moment of <span class="math inline">\(x_t\)</span>, i.e mean <span class="math inline">\(\mu = \mathbb{E}(x_t)\)</span> and variance <span class="math inline">\(\gamma_0 = \mathbb{E}[(x_t - \mu)^2]\)</span>. Here <span class="math inline">\(\mu, \gamma_0\)</span> are not functions of <span class="math inline">\(t\)</span>.</p></li>
+<li><p>For given <span class="math inline">\(k\)</span>, the lag-<span class="math inline">\(k\)</span> autocovariance of <span class="math inline">\(x_t\)</span> as <span class="math inline">\(\gamma_k = Cov(x_t, x_{t-k})\)</span>.</p>
+<p>2.1. By Cauchy-Schwarz inequality, <span class="math inline">\(\gamma_k\)</span> exists and is time invariant, and this statistics variable show linear dependence between <span class="math inline">\(x_t\)</span> and <span class="math inline">\(x_{t-k}\)</span>.</p>
+<p>2.2. <span class="math inline">\(\gamma_k = \gamma_{-k}\)</span>, <span class="math inline">\(\gamma_0 = Var(x_t)\)</span>.</p></li>
+</ol>
+</div>
+</div>
+<div id="correlation-and-autocorrelation-function" class="section level1">
+<h1>Correlation and autocorrelation function</h1>
+<p><span class="math display">\[ \rho_{x,y} = \frac{Cov(x,y)}{\sqrt{Var(x)\cdot Var(y)}}  \]</span></p>
+<p>And the estimation of <span class="math inline">\(\rho_{x,y}\)</span> is trivial.</p>
+<div id="alternatives-of-traditional-pearson-correlation" class="section level2">
+<h2>Alternatives of traditional Pearson correlation</h2>
+<p>The most popular 2 alternatives: 1. Spearman’s rho – Spearman’s rank correlation, as is based on ranks of marginal variables. 2. Kendall’s tau – difference between concordance and discordance. <span class="math display">\[ \tau = P[(X_1 - X_2)(Y_1 - Y_2) &gt; 0] - P[(X_1 - X_2)(Y_1 - Y_2) &lt; 0]\]</span> where <span class="math inline">\((X_1, Y_1), (X_2, Y_2)\)</span> are iid continuous bivariate random variables.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbImNvcihzcDUsaWJtLG1ldGhvZD0nc3BlYXJtYW4nKSIsImNvcihzcDUsaWJtLG1ldGhvZD0na2VuZGFsbCcpIl19 -->
+<pre class="r"><code>cor(sp5,ibm,method='spearman')
+cor(sp5,ibm,method='kendall')</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="autocorrelation-function-acf" class="section level2">
+<h2>Autocorrelation Function (ACF)</h2>
+<p>Assump <span class="math inline">\(x_t\)</span> is weakly stationary, lag-<span class="math inline">\(k\)</span> autocorrelation <span class="math inline">\(\rho_k\)</span> of <span class="math inline">\(x_t\)</span> is <span class="math display">\[ \rho_k = \frac{Cov(x_t, x_{t-k})}{\sqrt{Var(x_t) Var(x_{t-k})}} = \frac{Cov(x_t, x_{t-k})}{Var(x_t)} = \frac{\gamma_k}{\gamma_0} \]</span></p>
+<p>Similar to <span class="math inline">\(\gamma_k\)</span>, <span class="math inline">\(\rho_0 = 1, \rho_k = \rho_{-k}\)</span> and <span class="math inline">\(-1 \leq \rho_k \leq 1\)</span>. Here <span class="math inline">\(\{\rho_k\}_{k=0,1\dots}\)</span> is ACF of <span class="math inline">\(x_t\)</span>.</p>
+<p>If <span class="math inline">\(\rho_k = 0\)</span> for <span class="math inline">\(\forall k&gt;0\)</span>, <span class="math inline">\(x_t\)</span> is not serially correlated.</p>
+For given <span class="math inline">\(\{x_t\}_{t=1,\dots,T}\)</span>, then
+<span class="math display">\[\begin{align*}
+  \bar{x} &amp;= \frac{1}{T}\sum^{T}_{1} x_t\\
+  \hat{\rho_0} &amp;= \frac{\sum_{t=2}^{T}(x_t-\bar{x})(x_{t-1}-\bar{x})}{\sum_{t=1}^{T}(x_t - \bar{x})^2}\\
+  \hat{\rho_k} &amp;= \frac{\sum_{t=k+1}^{T}(x_t-\bar{x})(x_{t-k}-\bar{x})}{\sum_{t=1}^{T}(x_t - \bar{x})^2} \quad 0\leq k&lt;T-1
+\end{align*}\]</span>
+<p>If <span class="math inline">\(\{x_t\}\)</span> iid with <span class="math inline">\(\mathbb{E}[x_t^2]&lt;\infty\)</span>. Then <span class="math display">\[ \hat{\rho_k} \longrightarrow \mathbf{N}[0, \frac{1}{T} ] \quad \text{asymptotically}\]</span></p>
+<p>For more weaker case, <span class="math inline">\(x_t\)</span> weakly stationary and has the form (linear time series) <span class="math display">\[ x_t = \mu + \sum_{i=0}^{q} \psi_i a_{t-i}\]</span> <span class="math inline">\(\psi_0 =1\)</span>, <span class="math inline">\(\{a_i\}\)</span> iid and with mean 0, then <span class="math display">\[ \hat{\rho_k} \longrightarrow \mathbf{N}[0, \frac{1+2\sum_{i=1}^{k-1}\rho_i^2}{T} ] \quad \text{asymptotically}\]</span></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGEgPSByZWFkLnRhYmxlKFwibS1kZWMxMjkxMC50eHRcIixoZWFkZXI9VClcbmhlYWQoZGEpXG5kMTAgPSBkYSRkZWMxMCAgIyBzZWxlY3QgdGhlIERlY2lsZSAxMCByZXR1cm5zXG5kZWMxMCA9IHRzKGQxMCwgZnJlcXVlbmN5ID0gMTIsIHN0YXJ0ID0gYygxOTY3LDEpKSBcbnBhcihtZmNvbCA9IGMoMiwgMSkpXG5wbG90KGRlYzEwLCB4bGFiPSd5ZWFyJywgeWxhYiA9ICdyZXR1cm5zJylcbnRpdGxlKG1haW4gPSAnKGEpOiBTaW1wbGUgcmV0dXJucycpXG5hY2YoZDEwLCBsYWcgPSAyNCkgIyBjb21tYW5kIHRvIG9idGFpbiBzYW1wbGUgQUNGIG9mIHRoZSBkYXRhXG5gYGAifQ== -->
+<pre class="r"><code>da = read.table(&quot;m-dec12910.txt&quot;,header=T)
+head(da)
+d10 = da$dec10  # select the Decile 10 returns
+dec10 = ts(d10, frequency = 12, start = c(1967,1)) 
+par(mfcol = c(2, 1))
+plot(dec10, xlab='year', ylab = 'returns')
+title(main = '(a): Simple returns')
+acf(d10, lag = 24) # command to obtain sample ACF of the data</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Here on acf plot, the 2 dashed line is the boundary of 2 standard error <span class="math inline">\(\pm 2/\sqrt{T}\)</span>, i.e 95% CI for individual acf.</p>
+</div>
+<div id="test-acf" class="section level2">
+<h2>Test ACF</h2>
+<div id="test-individual-acf" class="section level3">
+<h3>Test individual ACF</h3>
+<p>For given <span class="math inline">\(k\)</span>, we have hypos to test:</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(H_0 : \rho_k = 0\)</span>,</li>
+<li><span class="math inline">\(H_1 : \rho_k \neq 0\)</span></li>
+</ol>
+<p>And the test statistics is <span class="math display">\[ 
+  t-ratio = \frac{\hat{\rho_k}}{\sqrt{(1+2\sum_{i=1}^{k-1}\hat{\rho}_i^2)/T}} =  \frac{\hat{\rho_k} \sqrt{T}}{\sqrt{1+2\sum_{i=1}^{k-1}\hat{\rho}_i^2}}\]</span></p>
+<p>For most packages in <code>R</code>, they use <span class="math display">\[
+  t-ratio = \frac{\hat{\rho_k}}{\sqrt{1/T}} = \hat{\rho_k}\sqrt{T}
+\]</span></p>
+<p>If <span class="math inline">\(\{x_t\}\)</span> a stationary Gussian Series (<span class="math inline">\(\exists N, x_n = 0, \forall n&gt;N\)</span>), with <span class="math inline">\(\rho_j =0\)</span> for <span class="math inline">\(j&gt;k\)</span>, then <span class="math display">\[ t-ratio \longrightarrow \mathbf{N}[0,1] \quad \text{as} \ {} T \rightarrow \infty \]</span></p>
+<p>This means when testing hypo, just compare <span class="math inline">\(|t-ratio|\)</span> with <span class="math inline">\(\mathbb{Z}_{\alpha/2} = 1.96\)</span>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZjE9YWNmKGQxMCxsYWc9MjQpXG5mMSRhY2ZcbnR0PWYxJGFjZlsxM10qc3FydCg1MTYpXG50dFxuYGBgIn0= -->
+<pre class="r"><code>f1=acf(d10,lag=24)
+f1$acf
+tt=f1$acf[13]*sqrt(516)
+tt</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="portmanteau-test" class="section level3">
+<h3>Portmanteau Test</h3>
+<p>This is the fun part, like what we did in multivariate regression and test all or part of coefficients in model simutaneously.</p>
+<p>In fact, a linear (pay attention to our linearity assumption) time series model can be characterized by its ACF. And by making use of sample ACF, we could specify the dependence of the data.</p>
+<p>Now we give the hypos of jointly test:</p>
+<ol style="list-style-type: decimal">
+<li>$ H_0: _0 = _1 = = _m = 0$,</li>
+<li>$ H_1: _i 0 $ for some certain <span class="math inline">\(i\)</span>s.</li>
+</ol>
+<p>The test statistic is constructed by Box and Pierce (1970): <span class="math display">\[ Q_{*}(m) = T \sum_{l = 1}^{m} \hat{\rho}_l^2 \]</span></p>
+<p>If <span class="math inline">\(\{ x_t \}\)</span> is iid, <span class="math display">\[ Q_{*}(m) \longrightarrow \chi^2(m) \quad \text{asymptotically} \]</span></p>
+<p>We have the modified <span class="math inline">\(Q_{*}(m)\)</span> statistic to increase the power of test for finite sample:</p>
+<p><span class="math display">\[ Q(m) = T(T+2) \sum_{l=1}^{m} \frac{\hat{\rho}^2_l}{T-l}  \]</span></p>
+<p>Comparing with <span class="math inline">\(\chi^2_{\alpha}\)</span>, we could decide to reject <span class="math inline">\(H_0\)</span>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBManVuZy1Cb3ggUSBzdGF0aXN0aWNzXG5kYT1yZWFkLnRhYmxlKFwibS1pYm1zcDY3MDkudHh0XCIsaGVhZGVyPVQpXG5pYm09ZGEkaWJtXG5sbmlibT1sb2coaWJtKzEpICMgVHJhbnNmZXIgdG8gbG9nIHJldHVybnNcbkJveC50ZXN0KGlibSxsYWc9MTIsdHlwZT0nTGp1bmcnKVxuQm94LnRlc3QobG5pYm0sbGFnPTEyLHR5cGU9J0xqdW5nJylcbmBgYCJ9 -->
+<pre class="r"><code># Ljung-Box Q statistics
+da=read.table(&quot;m-ibmsp6709.txt&quot;,header=T)
+ibm=da$ibm
+lnibm=log(ibm+1) # Transfer to log returns
+Box.test(ibm,lag=12,type='Ljung')
+Box.test(lnibm,lag=12,type='Ljung')</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Simulation study suggests that <span class="math inline">\(m \approx ln(T)\)</span> provides better power performance.</p>
+<p>In <code>CAPM</code>, we want that <span class="math inline">\(\{x_t\}\)</span> is not predictable and have no autocorrelations. By <span class="math inline">\(Q\)</span>, we have the tool to test efficiency of market.</p>
+</div>
+</div>
+<div id="white-noise" class="section level2">
+<h2>White noise</h2>
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogJ0NoYXB0ZXIgMjogTGluZWFyIE1vZGVscyBmb3IgRmluYW5jaWFsIFRpbWUgU2VyaWVzJw0Kb3V0cHV0Og0KICBodG1sX2RvY3VtZW50Og0KICAgIGRmX3ByaW50OiBwYWdlZA0KLS0tDQoNClRoaXMgaXMgbm90ZSBmb3IgUnVleSBTLiBUc2F5J3MgUiBpbnN0cnVjdGlvbiBvbiBmaW5jbmNpYWwgdGltZSBzZXJpZXMsIGNoYXB0ZXIgMi4gRm9yIGZ1cnRoZXIga25vd2xlZGdlIG9uIGxpbmVhciB0aW1lIHNlcmllcyBhbmFseXNpcywgcGxlYXNlIHJlZmVyIHRvIFRzYXkncyBib29rIGZpbmFuY2lhbCBhbmFseXNpcyAoMjAxMCkuDQoNCkluIHRoaXMgY2hhcHRlciwgUnVleSBpbnRyb2R1Y2VkIGZvbGxvd2luZyBtb2RlbHM6DQoNCi0gU2ltcGxlIGF1dG9yZWdyZXNzaXZlIG1vZGVsIChBUikNCi0gU2ltcGxlIG1vdmluZyBhdmVyYWdlIG1vZGVsIChNQSkNCi0gTWl4ZWQgYXV0b3JlZ3Jlc3NpdmUgbW92aW5nIGF2ZXJhZ2UgbW9kZWwgKEFSTUEpDQotIFVuaXQtcm9vdCBtb2RlbHMgYW5kIHVuaXQtcm9vdCB0ZXN0DQotIEV4cG9uZW50aWFsIFNtb290aGluZw0KLSBTZWFzb25hbCBNb2RlbHMNCi0gUmVncmVzc2lvbiBtb2RlbHMgd2l0aCB0aW1lIHNlcmllcyBlcnJvcnMNCi0gRnJhY3Rpb25hbGx5IGRpZmZlcmVuY2VkIG1vZGVscyBmb3IgbG9uZy1yYW5nZSBkZXBlbmRlbmNlDQoNCiMgU3RhdGlvbmFyeQ0KDQojIyBXZWFrIHN0YXRpb25hcnkNCg0KIldlYWsgU3RhdGlvbmFyeSIgaXMgZnVuZGFtZW50YWwgY29uY2VwdCBpbiBmaW5hbmNpYWwgdGltZSBzZXJpZXMgYW5hbHlzaXMuIExpdGVyYWxseSwgaXQgc3RhdGVzIHRoYXQgdGhlIGxvZyByZXR1cm4gb2YgYSBjZXJ0YWluIHN0b2NrIG9yIGFzc2V0IGlzIGFyb3VuZCAwIG92ZXIgdGltZSwgaS5lLiBpZiB0aGUgdGltZSBzcGFuIGlzIGRpdmlkZWQgaW50byBzdWJwZXJpb2RzIGFuZCB0aGUgcmVzdWx0aW5nIHNhbXBsZSBtZWFuIG9mIHN1YnBlcmlvZHMgaXMgY2xvc2UgdG8gMC4NCg0KVGhlIG1vc3Qgc2lnbmlmaWNhbnQgcHJvcGVydHkgb2YgYSB3ZWVrIHN0YXRpb25hcnkgc3RhdGlzdGljcyB2YXJpYWJsZSBpcyB0aW1lLWludmFyaWFuY2UuDQoNCmBgYHtyLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0KbGlicmFyeShxdWFudG1vZCkNClNQWCA8LSBnZXRTeW1ib2xzKCJeR1NQQyIsZnJvbSA9ICIyMDA3LTAxLTAxIiwgc3JjID0ieWFob28iKQ0KU1AucnRuIDwtIGRpZmYobG9nKEdTUEMkR1NQQy5DbG9zZSkpICMgQ29tcHV0ZSBsb2cgcmV0dXJucw0KY2hhcnRTZXJpZXMoU1AucnRuLHRoZW1lPSJ3aGl0ZSIpDQpgYGANCldlIGNvdWxkIHNlZSB0aGF0IGV4Y2VwdCBkZXByZXNzaW9uIGVyYSwgdGhlIGxvZyByZXR1cm4gb2YgUyZQIDUwMCBpcyBhcm91bmQgJFstMC4wNSwgMC4wNV0kLiBUaGUgdmFyaWFuY2Ugb2YgbG9nIHJldHVybiBpcyBjb25zdGFudCBvdmVyIHRpbWUuDQoNCmBgYHtyLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQ0Ka28gPC0gcmVhZC5jc3YoIktPXzE5ODUtMjAxMC5jc3YiKQ0Ka28uZHZpZCA8LSBuYS5vbWl0KGtvWywgYygyLDMpXSkNCmtvLmR2aWRbLCAxXSA8LSB5bWQoa28uZHZpZFssIDFdKQ0Ka28uZHZpZCA8LSB4dHMoa28uZHZpZFssMl0sIG9yZGVyLmJ5ID0ga28uZHZpZFssMV0pDQpjaGFydFNlcmllcyhrby5kdmlkKQ0KYGBgDQpUaGlzIGlzIHRoZSBkaXZpZGVuZCBwYXltZW50IG9mIENvY2EgQ29sYSBmcm9tIDE5ODUgdG8gMjAxNiwgdGhlIGRhdGUgYW5kIHBheW1lbnQgaXMgZ2l2ZW4gYnkgW1dSRFNdKGh0dHBzOi8vd3Jkcy13ZWIud2hhcnRvbi51cGVubi5lZHUvd3Jkcy9pbmRleC5jZm0pLiBJZiBkaXZpZGluZyB0aGUgdGltZSBzcGFuLCB3ZSBjb3VsZCBzZWUgdGhhdCB0aGUgcGF5bWVudCBpcyBub3QgdGltZSBpbnZhcmlhbnQuIFRoZSBkaWZmZXJlbmNlIG9mIGVhY2ggc3VicGVyaW9kIGlzIHNpZ25pZmljYW50Lg0KDQpOb3cgd2UgY29uY2x1ZGUgc29tZSBpbXBvcnRhbnQgcHJvcGVydGllcyBvZiB0aW1lIHNlcmllcyAkeF90JDoNCjEuIFRoZSBmaXJzdCAyIG1vbWVudCBvZiAkeF90JCwgaS5lIG1lYW4gJFxtdSA9IFxtYXRoYmJ7RX0oeF90KSQgYW5kIHZhcmlhbmNlICRcbWF0aGJie0V9Wyh4X3QgLSBcbXUpXjJdJA0KDQoNCg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogJ0NoYXB0ZXIgMjogTGluZWFyIE1vZGVscyBmb3IgRmluYW5jaWFsIFRpbWUgU2VyaWVzJw0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KVGhpcyBpcyBub3RlIGZvciBSdWV5IFMuIFRzYXkncyBSIGluc3RydWN0aW9uIG9uIGZpbmNuY2lhbCB0aW1lIHNlcmllcywgY2hhcHRlciAyLiBGb3IgZnVydGhlciBrbm93bGVkZ2Ugb24gbGluZWFyIHRpbWUgc2VyaWVzIGFuYWx5c2lzLCBwbGVhc2UgcmVmZXIgdG8gVHNheSdzIGJvb2sgZmluYW5jaWFsIGFuYWx5c2lzICgyMDEwKS4NCg0KSW4gdGhpcyBjaGFwdGVyLCBSdWV5IGludHJvZHVjZWQgZm9sbG93aW5nIG1vZGVsczoNCg0KLSBTaW1wbGUgYXV0b3JlZ3Jlc3NpdmUgbW9kZWwgKEFSKQ0KLSBTaW1wbGUgbW92aW5nIGF2ZXJhZ2UgbW9kZWwgKE1BKQ0KLSBNaXhlZCBhdXRvcmVncmVzc2l2ZSBtb3ZpbmcgYXZlcmFnZSBtb2RlbCAoQVJNQSkNCi0gVW5pdC1yb290IG1vZGVscyBhbmQgdW5pdC1yb290IHRlc3QNCi0gRXhwb25lbnRpYWwgU21vb3RoaW5nDQotIFNlYXNvbmFsIE1vZGVscw0KLSBSZWdyZXNzaW9uIG1vZGVscyB3aXRoIHRpbWUgc2VyaWVzIGVycm9ycw0KLSBGcmFjdGlvbmFsbHkgZGlmZmVyZW5jZWQgbW9kZWxzIGZvciBsb25nLXJhbmdlIGRlcGVuZGVuY2UNCg0KIyBTdGF0aW9uYXJ5DQoNCiMjIFdlYWsgc3RhdGlvbmFyeQ0KDQoiV2VhayBTdGF0aW9uYXJ5IiBpcyBmdW5kYW1lbnRhbCBjb25jZXB0IGluIGZpbmFuY2lhbCB0aW1lIHNlcmllcyBhbmFseXNpcy4gTGl0ZXJhbGx5LCBpdCBzdGF0ZXMgdGhhdCB0aGUgbG9nIHJldHVybiBvZiBhIGNlcnRhaW4gc3RvY2sgb3IgYXNzZXQgaXMgYXJvdW5kIDAgb3ZlciB0aW1lLCBpLmUuIGlmIHRoZSB0aW1lIHNwYW4gaXMgZGl2aWRlZCBpbnRvIHN1YnBlcmlvZHMgYW5kIHRoZSByZXN1bHRpbmcgc2FtcGxlIG1lYW4gb2Ygc3VicGVyaW9kcyBpcyBjbG9zZSB0byAwLg0KDQpUaGUgbW9zdCBzaWduaWZpY2FudCBwcm9wZXJ0eSBvZiBhIHdlZWsgc3RhdGlvbmFyeSBzdGF0aXN0aWNzIHZhcmlhYmxlIGlzIHRpbWUtaW52YXJpYW5jZS4NCg0KYGBge3IsIG1lc3NhZ2U9IEZBTFNFLCB3YXJuaW5nPUZBTFNFfQ0KbGlicmFyeShxdWFudG1vZCkNCnNweCA8LSBnZXRTeW1ib2xzKCJeR1NQQyIsZnJvbSA9ICIyMDA2LTAxLTAxIikNCnNweC5ydG4gPC0gZGlmZihsb2coR1NQQyRHU1BDLkFkanVzdGVkKSkgIyBDb21wdXRlIGxvZyByZXR1cm5zDQpjaGFydFNlcmllcyhTUC5ydG4sdGhlbWU9IndoaXRlIikNCmBgYA0KDQpXZSBjb3VsZCBzZWUgdGhhdCBleGNlcHQgZGVwcmVzc2lvbiBlcmEsIHRoZSBsb2cgcmV0dXJuIG9mIFMmUCA1MDAgaXMgYXJvdW5kICRbLTAuMDUsIDAuMDVdJC4gVGhlIHZhcmlhbmNlIG9mIGxvZyByZXR1cm4gaXMgY29uc3RhbnQgb3ZlciB0aW1lLg0KDQpgYGB7ciwgd2FybmluZyA9IEZBTFNFLCBtZXNzYWdlID0gRkFMU0V9DQpsaWJyYXJ5KHh0cykNCmxpYnJhcnkobHVicmlkYXRlKQ0KbGlicmFyeShxdWFudG1vZCkNCmtvIDwtIHJlYWQuY3N2KCJLT18xOTg1LTIwMTAuY3N2IikNCmtvLmR2aWQgPC0gbmEub21pdChrb1ssIGMoMyw0KV0pDQprby5kdmlkWywgMV0gPC0geW1kKGtvLmR2aWRbLCAxXSkNCmtvLmR2aWQgPC0geHRzKGtvLmR2aWRbLDJdLCBvcmRlci5ieSA9IGtvLmR2aWRbLDFdKQ0KY2hhcnRTZXJpZXMoa28uZHZpZCwgdGhlbWUgPSAid2hpdGUiKQ0KYGBgDQoNClRoaXMgaXMgdGhlIGRpdmlkZW5kIHBheW1lbnQgb2YgQ29jYSBDb2xhIGZyb20gMTk4NSB0byAyMDE2LCB0aGUgZGF0ZSBhbmQgcGF5bWVudCBpcyBnaXZlbiBieSBbV1JEU10oaHR0cHM6Ly93cmRzLXdlYi53aGFydG9uLnVwZW5uLmVkdS93cmRzL2luZGV4LmNmbSkuIElmIGRpdmlkaW5nIHRoZSB0aW1lIHNwYW4sIHdlIGNvdWxkIHNlZSB0aGF0IHRoZSBwYXltZW50IGlzIG5vdCB0aW1lIGludmFyaWFudC4gVGhlIGRpZmZlcmVuY2Ugb2YgZWFjaCBzdWJwZXJpb2QgaXMgc2lnbmlmaWNhbnQuDQoNCk5vdyB3ZSBjb25jbHVkZSBzb21lIGltcG9ydGFudCBwcm9wZXJ0aWVzIG9mIHRpbWUgc2VyaWVzICR4X3QkOg0KDQoxLiBUaGUgZmlyc3QgMiBtb21lbnQgb2YgJHhfdCQsIGkuZSBtZWFuICRcbXUgPSBcbWF0aGJie0V9KHhfdCkkIGFuZCB2YXJpYW5jZSAkXGdhbW1hXzAgPSBcbWF0aGJie0V9Wyh4X3QgLSBcbXUpXjJdJC4gSGVyZSAkXG11LCBcZ2FtbWFfMCQgYXJlIG5vdCBmdW5jdGlvbnMgb2YgJHQkLg0KDQoyLiBGb3IgZ2l2ZW4gJGskLCB0aGUgbGFnLSRrJCBhdXRvY292YXJpYW5jZSBvZiAkeF90JCBhcyAkXGdhbW1hX2sgPSBDb3YoeF90LCB4X3t0LWt9KSQuDQoNCiAgICAyLjEuIEJ5IENhdWNoeS1TY2h3YXJ6IGluZXF1YWxpdHksICRcZ2FtbWFfayQgZXhpc3RzIGFuZCBpcyB0aW1lIGludmFyaWFudCwgYW5kIHRoaXMgc3RhdGlzdGljcyB2YXJpYWJsZSBzaG93IGxpbmVhciBkZXBlbmRlbmNlIGJldHdlZW4gJHhfdCQgYW5kICR4X3t0LWt9JC4NCiAgDQogICAgMi4yLiAkXGdhbW1hX2sgPSBcZ2FtbWFfey1rfSQsICRcZ2FtbWFfMCA9IFZhcih4X3QpJC4NCg0KIyBDb3JyZWxhdGlvbiBhbmQgYXV0b2NvcnJlbGF0aW9uIGZ1bmN0aW9uDQoNClxbIFxyaG9fe3gseX0gPSBcZnJhY3tDb3YoeCx5KX17XHNxcnR7VmFyKHgpXGNkb3QgVmFyKHkpfX0gIFxdDQoNCkFuZCB0aGUgZXN0aW1hdGlvbiBvZiAkXHJob197eCx5fSQgaXMgdHJpdmlhbC4NCg0KIyMgQWx0ZXJuYXRpdmVzIG9mIHRyYWRpdGlvbmFsIFBlYXJzb24gY29ycmVsYXRpb24NCg0KVGhlIG1vc3QgcG9wdWxhciAyIGFsdGVybmF0aXZlczoNCjEuIFNwZWFybWFuJ3MgcmhvIC0tIFNwZWFybWFuJ3MgcmFuayBjb3JyZWxhdGlvbiwgYXMgaXMgYmFzZWQgb24gcmFua3Mgb2YgbWFyZ2luYWwgdmFyaWFibGVzLg0KMi4gS2VuZGFsbCdzIHRhdSAtLSBkaWZmZXJlbmNlIGJldHdlZW4gY29uY29yZGFuY2UgYW5kIGRpc2NvcmRhbmNlLg0KXFsgXHRhdSA9IFBbKFhfMSAtIFhfMikoWV8xIC0gWV8yKSA+IDBdIC0gUFsoWF8xIC0gWF8yKShZXzEgLSBZXzIpIDwgMF1cXQ0Kd2hlcmUgJChYXzEsIFlfMSksIChYXzIsIFlfMikkIGFyZSBpaWQgY29udGludW91cyBiaXZhcmlhdGUgcmFuZG9tIHZhcmlhYmxlcy4NCg0KYGBge3IsIGV2YWwgPSBGQUxTRX0NCmNvcihzcDUsaWJtLG1ldGhvZD0nc3BlYXJtYW4nKQ0KY29yKHNwNSxpYm0sbWV0aG9kPSdrZW5kYWxsJykNCmBgYA0KDQoNCiMjIEF1dG9jb3JyZWxhdGlvbiBGdW5jdGlvbiAoQUNGKQ0KDQpBc3N1bXAgJHhfdCQgaXMgd2Vha2x5IHN0YXRpb25hcnksIGxhZy0kayQgYXV0b2NvcnJlbGF0aW9uICRccmhvX2skIG9mICR4X3QkIGlzIA0KXFsgXHJob19rID0gXGZyYWN7Q292KHhfdCwgeF97dC1rfSl9e1xzcXJ0e1Zhcih4X3QpIFZhcih4X3t0LWt9KX19ID0gXGZyYWN7Q292KHhfdCwgeF97dC1rfSl9e1Zhcih4X3QpfSA9IFxmcmFje1xnYW1tYV9rfXtcZ2FtbWFfMH0gXF0NCg0KU2ltaWxhciB0byAkXGdhbW1hX2skLCAkXHJob18wID0gMSwgXHJob19rID0gXHJob197LWt9JCBhbmQgJC0xIFxsZXEgXHJob19rIFxsZXEgMSQuIEhlcmUgJFx7XHJob19rXH1fe2s9MCwxXGRvdHN9JCBpcyBBQ0Ygb2YgJHhfdCQuDQoNCklmICRccmhvX2sgPSAwJCBmb3IgJFxmb3JhbGwgaz4wJCwgJHhfdCQgaXMgbm90IHNlcmlhbGx5IGNvcnJlbGF0ZWQuDQoNCkZvciBnaXZlbiAkXHt4X3RcfV97dD0xLFxkb3RzLFR9JCwgdGhlbg0KXGJlZ2lue2FsaWduKn0NCiAgXGJhcnt4fSAmPSBcZnJhY3sxfXtUfVxzdW1ee1R9X3sxfSB4X3RcXA0KICBcaGF0e1xyaG9fMH0gJj0gXGZyYWN7XHN1bV97dD0yfV57VH0oeF90LVxiYXJ7eH0pKHhfe3QtMX0tXGJhcnt4fSl9e1xzdW1fe3Q9MX1ee1R9KHhfdCAtIFxiYXJ7eH0pXjJ9XFwNCiAgXGhhdHtccmhvX2t9ICY9IFxmcmFje1xzdW1fe3Q9aysxfV57VH0oeF90LVxiYXJ7eH0pKHhfe3Qta30tXGJhcnt4fSl9e1xzdW1fe3Q9MX1ee1R9KHhfdCAtIFxiYXJ7eH0pXjJ9IFxxdWFkIDBcbGVxIGs8VC0xDQpcZW5ke2FsaWduKn0NCg0KSWYgJFx7eF90XH0kIGlpZCB3aXRoICRcbWF0aGJie0V9W3hfdF4yXTxcaW5mdHkkLiBUaGVuDQpcWyBcaGF0e1xyaG9fa30gXGxvbmdyaWdodGFycm93IFxtYXRoYmZ7Tn1bMCwgXGZyYWN7MX17VH0gXSBccXVhZCBcdGV4dHthc3ltcHRvdGljYWxseX1cXQ0KDQpGb3IgbW9yZSB3ZWFrZXIgY2FzZSwgJHhfdCQgd2Vha2x5IHN0YXRpb25hcnkgYW5kIGhhcyB0aGUgZm9ybSAobGluZWFyIHRpbWUgc2VyaWVzKQ0KXFsgeF90ID0gXG11ICsgXHN1bV97aT0wfV57cX0gXHBzaV9pIGFfe3QtaX1cXQ0KJFxwc2lfMCA9MSQsICRce2FfaVx9JCBpaWQgYW5kIHdpdGggbWVhbiAwLCB0aGVuDQpcWyBcaGF0e1xyaG9fa30gXGxvbmdyaWdodGFycm93IFxtYXRoYmZ7Tn1bMCwgXGZyYWN7MSsyXHN1bV97aT0xfV57ay0xfVxyaG9faV4yfXtUfSBdIFxxdWFkIFx0ZXh0e2FzeW1wdG90aWNhbGx5fVxdDQoNCmBgYHtyLCB3YXJuaW5nID0gRkFMU0UsIG1lc3NhZ2UgPSBGQUxTRX0NCmRhID0gcmVhZC50YWJsZSgibS1kZWMxMjkxMC50eHQiLGhlYWRlcj1UKQ0KaGVhZChkYSkNCmQxMCA9IGRhJGRlYzEwICAjIHNlbGVjdCB0aGUgRGVjaWxlIDEwIHJldHVybnMNCmRlYzEwID0gdHMoZDEwLCBmcmVxdWVuY3kgPSAxMiwgc3RhcnQgPSBjKDE5NjcsMSkpIA0KcGFyKG1mY29sID0gYygyLCAxKSkNCnBsb3QoZGVjMTAsIHhsYWI9J3llYXInLCB5bGFiID0gJ3JldHVybnMnKQ0KdGl0bGUobWFpbiA9ICcoYSk6IFNpbXBsZSByZXR1cm5zJykNCmFjZihkMTAsIGxhZyA9IDI0KSAjIGNvbW1hbmQgdG8gb2J0YWluIHNhbXBsZSBBQ0Ygb2YgdGhlIGRhdGENCmBgYA0KDQpIZXJlIG9uIGFjZiBwbG90LCB0aGUgMiBkYXNoZWQgbGluZSBpcyB0aGUgYm91bmRhcnkgb2YgMiBzdGFuZGFyZCBlcnJvciAkXHBtIDIvXHNxcnR7VH0kLCBpLmUgOTUlIENJIGZvciBpbmRpdmlkdWFsIGFjZi4NCg0KIyMgVGVzdCBBQ0YNCg0KIyMjIFRlc3QgaW5kaXZpZHVhbCBBQ0YNCg0KRm9yIGdpdmVuICRrJCwgd2UgaGF2ZSBoeXBvcyB0byB0ZXN0Og0KDQoxLiAkSF8wIDogXHJob19rID0gMCQsDQoyLiAkSF8xIDogXHJob19rIFxuZXEgMCQNCg0KQW5kIHRoZSB0ZXN0IHN0YXRpc3RpY3MgaXMNClxbIA0KICB0LXJhdGlvID0gXGZyYWN7XGhhdHtccmhvX2t9fXtcc3FydHsoMSsyXHN1bV97aT0xfV57ay0xfVxoYXR7XHJob31faV4yKS9UfX0gPSAgXGZyYWN7XGhhdHtccmhvX2t9IFxzcXJ0e1R9fXtcc3FydHsxKzJcc3VtX3tpPTF9XntrLTF9XGhhdHtccmhvfV9pXjJ9fVxdDQogIA0KRm9yIG1vc3QgcGFja2FnZXMgaW4gYFJgLCB0aGV5IHVzZQ0KXFsNCiAgdC1yYXRpbyA9IFxmcmFje1xoYXR7XHJob19rfX17XHNxcnR7MS9UfX0gPSBcaGF0e1xyaG9fa31cc3FydHtUfQ0KXF0NCg0KSWYgJFx7eF90XH0kIGEgc3RhdGlvbmFyeSBHdXNzaWFuIFNlcmllcyAoJFxleGlzdHMgTiwgeF9uID0gMCwgXGZvcmFsbCBuPk4kKSwgd2l0aCAkXHJob19qID0wJCBmb3IgJGo+ayQsIHRoZW4NClxbIHQtcmF0aW8gXGxvbmdyaWdodGFycm93IFxtYXRoYmZ7Tn1bMCwxXSBccXVhZCBcdGV4dHthc30gXCB7fSBUIFxyaWdodGFycm93IFxpbmZ0eSBcXQ0KDQpUaGlzIG1lYW5zIHdoZW4gdGVzdGluZyBoeXBvLCBqdXN0IGNvbXBhcmUgJHx0LXJhdGlvfCQgd2l0aCAkXG1hdGhiYntafV97XGFscGhhLzJ9ID0gMS45NiQuDQoNCmBgYHtyLCB3YXJuaW5nID0gRkFMU0UsIG1lc3NhZ2UgPSBGQUxTRX0NCmYxPWFjZihkMTAsbGFnPTI0KQ0KZjEkYWNmDQp0dD1mMSRhY2ZbMTNdKnNxcnQoNTE2KQ0KdHQNCmBgYA0KDQojIyMgUG9ydG1hbnRlYXUgVGVzdA0KDQpUaGlzIGlzIHRoZSBmdW4gcGFydCwgbGlrZSB3aGF0IHdlIGRpZCBpbiBtdWx0aXZhcmlhdGUgcmVncmVzc2lvbiBhbmQgdGVzdCBhbGwgb3IgcGFydCBvZiBjb2VmZmljaWVudHMgaW4gbW9kZWwgc2ltdXRhbmVvdXNseS4NCg0KSW4gZmFjdCwgYSBsaW5lYXIgKHBheSBhdHRlbnRpb24gdG8gb3VyIGxpbmVhcml0eSBhc3N1bXB0aW9uKSB0aW1lIHNlcmllcyBtb2RlbCBjYW4gYmUgY2hhcmFjdGVyaXplZCBieSBpdHMgQUNGLiBBbmQgYnkgbWFraW5nIHVzZSBvZiBzYW1wbGUgQUNGLCB3ZSBjb3VsZCBzcGVjaWZ5IHRoZSBkZXBlbmRlbmNlIG9mIHRoZSBkYXRhLg0KDQpOb3cgd2UgZ2l2ZSB0aGUgaHlwb3Mgb2Ygam9pbnRseSB0ZXN0Og0KDQoxLiAkIEhfMDogXHJob18wID0gXHJob18xID0gXGRvdHMgPSBccmhvX20gPSAwJCwNCjIuICQgSF8xOiBccmhvX2kgXG5lcSAwICQgZm9yIHNvbWUgY2VydGFpbiAkaSRzLg0KDQpUaGUgdGVzdCBzdGF0aXN0aWMgaXMgY29uc3RydWN0ZWQgYnkgQm94IGFuZCBQaWVyY2UgKDE5NzApOg0KXFsgUV97Kn0obSkgPSBUIFxzdW1fe2wgPSAxfV57bX0gXGhhdHtccmhvfV9sXjIgXF0NCg0KSWYgJFx7IHhfdCBcfSQgaXMgaWlkLCANClxbIFFfeyp9KG0pIFxsb25ncmlnaHRhcnJvdyBcY2hpXjIobSkgXHF1YWQgXHRleHR7YXN5bXB0b3RpY2FsbHl9IFxdDQoNCldlIGhhdmUgdGhlIG1vZGlmaWVkICRRX3sqfShtKSQgc3RhdGlzdGljIHRvIGluY3JlYXNlIHRoZSBwb3dlciBvZiB0ZXN0IGZvciBmaW5pdGUgc2FtcGxlOg0KDQpcWyBRKG0pID0gVChUKzIpIFxzdW1fe2w9MX1ee219IFxmcmFje1xoYXR7XHJob31eMl9sfXtULWx9ICBcXQ0KDQpDb21wYXJpbmcgd2l0aCAkXGNoaV4yX3tcYWxwaGF9JCwgd2UgY291bGQgZGVjaWRlIHRvIHJlamVjdCAkSF8wJC4NCg0KYGBge3IsIG1lc3NhZ2U9IEZBTFNFLCB3YXJuaW5nPSBGQUxTRX0NCiMgTGp1bmctQm94IFEgc3RhdGlzdGljcw0KZGE9cmVhZC50YWJsZSgibS1pYm1zcDY3MDkudHh0IixoZWFkZXI9VCkNCmlibT1kYSRpYm0NCmxuaWJtPWxvZyhpYm0rMSkgIyBUcmFuc2ZlciB0byBsb2cgcmV0dXJucw0KQm94LnRlc3QoaWJtLGxhZz0xMix0eXBlPSdManVuZycpDQpCb3gudGVzdChsbmlibSxsYWc9MTIsdHlwZT0nTGp1bmcnKQ0KYGBgDQoNClNpbXVsYXRpb24gc3R1ZHkgc3VnZ2VzdHMgdGhhdCAkbSBcYXBwcm94IGxuKFQpJCBwcm92aWRlcyBiZXR0ZXIgcG93ZXIgcGVyZm9ybWFuY2UuDQoNCkluIGBDQVBNYCwgd2Ugd2FudCB0aGF0ICRce3hfdFx9JCBpcyBub3QgcHJlZGljdGFibGUgYW5kIGhhdmUgbm8gYXV0b2NvcnJlbGF0aW9ucy4gQnkgJFEkLCB3ZSBoYXZlIHRoZSB0b29sIHRvIHRlc3QgZWZmaWNpZW5jeSBvZiBtYXJrZXQuDQoNCiMjIFdoaXRlIG5vaXNlDQoNCg0KDQoNCg0KDQoNCg0K</div>
 
 
 
