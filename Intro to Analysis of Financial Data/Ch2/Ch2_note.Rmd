@@ -1,7 +1,46 @@
 ---
 title: 'Chapter 2: Linear Models for Financial Time Series'
-output: html_notebook
+output: 
+  html_document:
+   toc: true
+   toc_float: true
+   number_sections: true
 ---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 8px;
+}
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+}
+h1 { /* Header 1 */
+  font-size: 28px;
+  color: DarkBlue;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+  color: DarkBlue;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+
 
 This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book financial analysis (2010).
 
@@ -28,7 +67,7 @@ The most significant property of a week stationary statistics variable is time-i
 library(quantmod)
 spx <- getSymbols("^GSPC",from = "2006-01-01")
 spx.rtn <- diff(log(GSPC$GSPC.Adjusted)) # Compute log returns
-chartSeries(SP.rtn,theme="white")
+chartSeries(spx.rtn,theme="white")
 ```
 
 We could see that except depression era, the log return of S&P 500 is around $[-0.05, 0.05]$. The variance of log return is constant over time.
@@ -151,8 +190,10 @@ In fact, a linear (pay attention to our linearity assumption) time series model 
 
 Now we give the hypos of jointly test:
 
-1. $ H_0: \rho_0 = \rho_1 = \dots = \rho_m = 0$,
-2. $ H_1: \rho_i \neq 0 $ for some certain $i$s.
+$$ H_0 : \rho_0 = \rho_1 = ... = \rho_m = 0$$
+$$H_1 : \rho_i \neq 0 \quad \text{for some}\quad i \in \{0,1,2...,m\}$$
+
+
 
 The test statistic is constructed by Box and Pierce (1970):
 \[ Q_{*}(m) = T \sum_{l = 1}^{m} \hat{\rho}_l^2 \]
@@ -181,10 +222,33 @@ In `CAPM`, we want that $\{x_t\}$ is not predictable and have no autocorrelation
 
 ## White noise
 
+**Def**: A time series $\{x_t\}$ whose variables are iid and have finite mean and variance. For example, Gussian white nosie $\{x_t\} \sim \mathbb{N}[0,\sigma^2]$
+
+White noise's ACFs are 0. In practice, we could see sample with ACFs = 0 as white nosie.
+
+## Linear Time series
+
+**Def** a time series is linear if it's a linear combination of white series and its mean
+\[ x_t = \mu + \sum^{\infty}_{i=0} \psi_i e_{t-i} \]
+with $\psi_0 = 1, \{e_k\} \sim \mathbb{N}[0,\sigma^2]$. It's trivial to see $x_t$'s mean and variance. Here we could see $e_t$ as the new info at time $t$.
+
+Note that the weakly stationary time series requires that $Var(x_t) < \infty$, i.e. 
+$$ \sum^{\infty}_{i=0} \psi_{i}^2 <\infty$$
+This means the influence of remote $e_k$ from time $t$ vanishes.
+
+The lag-$l$ autocovariance (use the iid of $e_k$)
+\begin{align*}
+  \gamma_l &= Cov(x_t, x_{t-l}) \\
+  &= \mathbf{E} \big[ (\sum^{\infty}_{i=0} \psi_i e_{t-i})(\sum^{\infty}_{j=0} \psi_j e_{t-i-l})\Big] \\
+  &= \mathbf{E}(\sum_{i,j=0}^{\infty} \psi_i \psi_j e_{t-i} e_{t-j-l})\\
+  &= \sigma^2 \sum_{j=0}^{\infty} \psi_j \psi_{j+l}
+\end{align*}
+
+Then 
+\[\rho_l = \frac{\gamma_l}{\gamma_0} = \frac{ \sum_{i=0}^{\infty} \psi_i \psi_{i+l} }{ \sum_{i=0}^{\infty} \psi_i^2} \]
 
 
-
-
+  
 
 
 
