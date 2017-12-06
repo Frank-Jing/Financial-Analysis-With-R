@@ -1,0 +1,48 @@
+---
+title: "Chapter 2: Linear Models for Financial Time Series (2)"
+author: "Weixaing Jing"
+date: "December 6, 2017"
+output: html_document:
+  toc: true
+   toc_float: true
+   number_sections: true
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 8px;
+}
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+}
+h1 { /* Header 1 */
+  font-size: 28px;
+  color: DarkBlue;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+  color: DarkBlue;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+
+This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book: [An Introduction to Analysis of Financial Data with R (2010)](https://www.amazon.com/Introduction-Analysis-Financial-Data/dp/0470890819/ref=sr_1_3?ie=UTF8&qid=1512551660&sr=8-3&keywords=ruey+tsay) or visit his website for the book <http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/>.
+
+
+
