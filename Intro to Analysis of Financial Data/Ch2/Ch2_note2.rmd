@@ -1,9 +1,10 @@
 ---
 title: "Chapter 2: Linear Models for Financial Time Series (2)"
 author: "Weixaing Jing"
-date: "December 6, 2017"
-output: html_document:
-  toc: true
+date: "December 18, 2017"
+output: 
+  html_document:
+   toc: true
    toc_float: true
    number_sections: true
 ---
@@ -42,7 +43,134 @@ pre { /* Code block - determines code spacing between lines */
 </style>
 
 
-This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book: [An Introduction to Analysis of Financial Data with R (2010)](https://www.amazon.com/Introduction-Analysis-Financial-Data/dp/0470890819/ref=sr_1_3?ie=UTF8&qid=1512551660&sr=8-3&keywords=ruey+tsay) or visit his website for the book <http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/>.
+This is note for Ruey S. Tsay's R instruction on fincncial time series, chapter 2. For further knowledge on linear time series analysis, please refer to Tsay's book: [An Introduction to Analysis of Financial Data with R (2010)](https://www.amazon.com/Introduction-Analysis-Financial-Data/dp/0470890819/ref=sr_1_3?ie=UTF8&qid=1512551660&sr=8-3&keywords=ruey+tsay) or visit his [website for the book and code](http://faculty.chicagobooth.edu/ruey.tsay/teaching/introTS/).
 
+# AR models
 
+The traditional AR(1) model is in the form
+\[ x_t = \beta_0 + \beta_1 x_{t-1} + \varepsilon_t  \]
+where $\{ \varepsilon_t \}$ is a white noise with distribution $\mathbb{N}[0, \sigma^2]$.
+
+I see it as a special case of linear regression and most of the conclusion and theories can apply to this model.
+
+It's trivial to calculate $\{ x_t\}$'s expectation and variance under the assumption of weakly stationary.
+
+In general, the AR(p) model is 
+\[ x_t =\beta_0 + \beta_1 x_{t-1} + \beta_2 x_{t-2} + \dots + \beta_k x_{t-p} + \varepsilon_t  \]
+
+## AR(1) model
+
+The $\{ x_t\}$ is weakly stationary is an important assumption and besed on that
+
+\begin{align*}
+  \mathbf{E}[x_t]
+  &= \beta_0 + \beta_1 \mathbf{E}[x_{t-1}] +\mathbf{E}[\varepsilon_t]\\
+  &\Rightarrow \mathbf{E}[x_t] = \frac{\beta_0}{1-\beta_1}
+\end{align*}
+
+So 
+
+1. $\mathbf{E}[x_t]$ exists iff $\beta_1 \neq 1$.
+
+2. $\mathbf{E}[x_t] = 0$ iff $\beta_0 = 0$.
+
+Furthermore, we have
+\begin{align*}
+  x_t - \mu 
+  &= \beta_1(x_{t-1} - \mu) + \varepsilon_t\\
+  &= \beta_1(\beta_1 (x_{t-2}-\mu) + \varepsilon_{t-1}) + \varepsilon_t\\
+  & \dots\\
+  &= \sum_{k=0}^{\infty} \beta_1^k \varepsilon_{t-k}
+\end{align*}
+
+Here we see $x_t - \mu$ is a linear combination of iid white noise. And we could refer to former [note](http://weixiang-jing.netlify.com/post/2017/12/02/saturday/linear-models-for-financial-time-series-1/)'s ACF part, $x_t = \mu + \sum_{i=1}^{\infty} \psi_i a_{t-i}$, in which $\psi_k = \beta_1^k$.
+
+By independence of $\{\varepsilon_t\}$, we have
+\[ Cov(x_{t-1}, \varepsilon_{t+k}) = Cov(x_{t-1}, \varepsilon_t) = \mathbf{E}[(x_{t-1} - \mu)\varepsilon_t] = 0 \]
+
+Therefore, 
+\[ Var(x_t) = Var(\beta_1(x_{t-1} - \mu) + \varepsilon_t) = \beta_1^2 Var(x_{t-1}) + Var(\varepsilon_t)\]
+
+Based on our weakly stationary assumption, $Var(x_t) = Var(x_{t-1})$ leads to 
+\[ \gamma_0 = Var(x_t) = \frac{\sigma^2}{1- \beta_1^2} \].
+
+Here we find a interesting conclusion that to let $Var(x_t) \geq 0$, $\beta_1^2 < 1$, i.e. $|\beta_1| < 1$, which satisfies our required weakly stationary assumption.
+
+From another point of view, since iid $\{\varepsilon_t\} \sim \mathbb{N}[0, \sigma^2]$ and 
+\[\gamma_l = Cov(x_t, x_{t-l}) = \sigma^2 \sum_{j=0}^{\infty}\psi_j \psi_{j+l} = \sigma^2 \sum_{j=0}^{\infty} \beta_1^{2j+l} < \infty\]
+
+we have
+
+\begin{align*}
+  |\beta_1| < 1
+  &\Rightarrow x_t - \mu = \sum_{k=0}^{\infty} \beta_1^k \varepsilon_{t-k}\\
+  &\Rightarrow \mathbf{E}[x_t], Var(x_t) < \infty \quad \text{invariant of }t\\
+  &\Rightarrow acf(x_t) < \infty
+\end{align*}
+Thus the model is weakly stationary.
+
+And we must note that
+
+1. Under the assumption that elements of $\{x_t\}$ are iid and $\mathbf{E}[x_t^2] < \infty$, $\hat{\rho}_k \rightarrow \mathbb{N}[0, \frac{1}{T}]$. But if we have $\forall k>0, \rho_k = 0$, we can't draw conclusion that elements $\{x_t\}$ is iid.
+
+2. "What's the definition or iff condition that a AR(1) is weakly stationary?" Here in book, it seems that author shows us that $Cov, \mathbf{E}, Var < \infty \Longleftrightarrow |\beta_1| <1$, which leads to weakly stationary.
+
+3. When doing HW of MFE402, I come across a problem proving $Var(\hat{\rho}_k) \rightarrow \frac{1}{T}$ asymptotically. But in another reference online I read, it shows that 
+\[
+  Var(\hat{\rho_k}) =
+  \begin{cases}
+    \frac{1}{T} & k =1\\
+    (1+ 2 \sum_{i=1}^{k-1}\hat{\rho}_i^2)/T & k >1
+  \end{cases}
+\]
+This need further examining.
+
+# AR models property
+
+## AR(1) model property
+
+Since $x_t$ is a linear combination of $\varepsilon_i$, if we multiple $\varepsilon_t$ on both sides of AR(1) model, we get
+\begin{align*}
+  \mathbf{E}[\varepsilon_t(x_t - \mu)]
+  &= \beta_1 \mathbf{E}[\varepsilon_t (x_{t-1}- \mu)] + \mathbf{E}[\varepsilon_t^2]
+  &= \sigma^2
+\end{align*}
+
+Based on this, we also get the relationship of covariance of $\{x_t\}$ as 
+\begin{align*}
+  \gamma_k
+  &=\mathbf{E}[(x_t - \mu)(x_{t-k}- \mu)]\\
+  &= \beta_1 \mathbf{E}[(x_{t-1} - \mu)(x_{t-k} - \mu)] + \mathbf{E}[(x_{t-k}- \mu)\varepsilon_t]
+\end{align*}
+Thus
+\[ \gamma_k = 
+  \begin{cases}
+    \beta_1 \gamma_1 + \sigma^2 & k =0\\
+    \beta_1 \gamma_{k-1} & k >0
+  \end{cases}
+\]
+
+Since $\gamma_0 = 1$, we have acf relationship as $\rho_k = \beta_1^{k}$.
+
+```{r}
+set.seed(1234)
+N <- 500
+x <- numeric(N)
+y <- numeric(N)
+x[1] <- 1
+y[1] <- 1
+for(i in 2:N){
+  x[i] <- -.9*x[i-1]+rnorm(1, 0, 0.5)
+  y[i] <- .9*y[i-1]+rnorm(1, 0, 0.5)
+}
+```
+For $-1<\beta_1 <0$, we have acf as
+```{r, fig.height= 4, fig.width= 6}
+acf(x)
+```
+
+For  $0 <\beta_1 <1$, we have acf as
+```{r, fig.height= 4, fig.width= 6}
+acf(y)
+```
 

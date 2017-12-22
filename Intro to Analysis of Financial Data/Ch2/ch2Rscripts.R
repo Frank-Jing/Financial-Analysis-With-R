@@ -32,6 +32,7 @@ ibm=da$ibm
 lnibm=log(ibm+1) # Transfer to log returns
 Box.test(ibm,lag=12,type='Ljung')
 Box.test(lnibm,lag=12,type='Ljung')
+
 # AR models
 da=read.table("q-gnp4710.txt",header=T)
 head(da)
@@ -51,7 +52,7 @@ tsdiag(m1,gof=12)  # model checking discussed later
 p1=c(1,-m1$coef[1:3]) # set-up the polynomial
 r1=polyroot(p1) # solve the polynomial equation
 r1
-Mod(r1)
+Mod(r1) # compute the absolute value of each roots
 k=2*pi/acos(1.616116/1.832674) # compute length of the period
 k
 #
